@@ -48,6 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     let text: string;
+    let sources: { title: string; uri: string }[] = [];
 
     try {
       // Primary: fetch prygl.net directly — no CORS proxy needed server-side
@@ -66,6 +67,7 @@ Based ONLY on this content, provide the ice skating safety report. ${reportPromp
       }], false);
 
       text = data.choices[0]?.message?.content || 'Could not retrieve summary.';
+      sources = [{ title: 'prygl.net', uri: 'https://prygl.net' }];
     } catch (fetchError) {
       console.warn('Direct prygl.net fetch failed, falling back to web search:', fetchError);
 
@@ -78,8 +80,8 @@ Based ONLY on this content, provide the ice skating safety report. ${reportPromp
 
       const isMidToolCall = firstContent.includes('<minimax:tool_call>') || firstContent.includes('<search>');
       if (isMidToolCall && annotations.length > 0) {
-        const searchContext = annotations
-          .filter((a: any) => a.type === 'url_citation' && a.url_citation?.content)
+        const citationAnnotations = annotations.filter((a: any) => a.type === 'url_citation' && a.url_citation?.content);
+        const searchContext = citationAnnotations
           .map((a: any) => `Source: ${a.url_citation.title}\nURL: ${a.url_citation.url}\n\n${a.url_citation.content}`)
           .join('\n\n---\n\n');
 
@@ -89,6 +91,10 @@ Based ONLY on this content, provide the ice skating safety report. ${reportPromp
         }], false);
 
         text = secondData.choices[0]?.message?.content || 'Could not retrieve summary.';
+        sources = citationAnnotations.map((a: any) => ({
+          title: a.url_citation.title || a.url_citation.url,
+          uri: a.url_citation.url,
+        }));
       } else {
         text = firstContent || 'Could not retrieve summary.';
       }
@@ -104,7 +110,7 @@ Based ONLY on this content, provide the ice skating safety report. ${reportPromp
       summary: text,
       canSkate,
       lastUpdated: new Date().toLocaleString(),
-      sources: [],
+      sources,
       warnings: [],
     };
 

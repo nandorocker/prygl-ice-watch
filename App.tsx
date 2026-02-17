@@ -29,13 +29,13 @@ const App: React.FC = () => {
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(true);
   const [revealContent, setRevealContent] = useState(false);
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (force = false) => {
     setAppStatus(AppStatus.LOADING);
     setRevealContent(false);
     setShowLoadingOverlay(true);
     setError(null);
     try {
-      const data = await fetchPryglStatus();
+      const data = await fetchPryglStatus(force);
       setReport(data);
       setAppStatus(AppStatus.SUCCESS);
       
@@ -57,10 +57,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     handleRefresh();
-    const interval = setInterval(() => {
-      if (!document.hidden) handleRefresh();
-    }, 15 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -142,8 +138,8 @@ const App: React.FC = () => {
               </div>
             </div>
             
-            <button 
-              onClick={handleRefresh}
+            <button
+              onClick={() => handleRefresh(true)}
               className={`
                 w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-current flex items-center justify-center
                 hover:bg-[#FDF6E3] hover:text-[#004CCB] transition-all duration-300
@@ -161,7 +157,7 @@ const App: React.FC = () => {
               <div className="text-center">
                 <h3 className="text-6xl md:text-8xl font-display mb-4">SIGNAL LOST</h3>
                 <p className="font-mono text-sm mb-4 opacity-60 italic">{error}</p>
-                <button onClick={handleRefresh} className="btn-regio">REBOOT</button>
+                <button onClick={() => handleRefresh(true)} className="btn-regio">REBOOT</button>
               </div>
             )}
 
@@ -205,7 +201,7 @@ const App: React.FC = () => {
             </div>
 
             <div className="text-right flex flex-col items-center md:items-end">
-              <a href="#" className="font-display text-xl md:text-2xl tracking-tightest hover:opacity-70 transition-opacity flex items-center gap-2">
+              <a href="https://nan.do" target="_blank" rel="noopener noreferrer" className="font-display text-xl md:text-2xl tracking-tightest hover:opacity-70 transition-opacity flex items-center gap-2">
                 MADE BY NANDO ROSSI
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -240,6 +236,25 @@ const App: React.FC = () => {
             </div>
             <div className="flex-1 overflow-y-auto p-8 pt-8 md:p-16">
               <div className="markdown-content text-xl md:text-3xl font-display italic mb-16 leading-tight border-l-8 border-current pl-6 py-2" dangerouslySetInnerHTML={renderMarkdown(report.summary)} />
+              {report.sources && report.sources.length > 0 && (
+                <div className="border-t-2 border-current pt-6 mt-2">
+                  <p className="font-mono text-[9px] tracking-widest uppercase opacity-50 mb-3">Sources</p>
+                  <ul className="flex flex-col gap-1">
+                    {report.sources.map((s, i) => (
+                      <li key={i}>
+                        <a
+                          href={s.uri}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-[10px] md:text-[11px] underline underline-offset-2 opacity-60 hover:opacity-100 transition-opacity break-all"
+                        >
+                          {s.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
