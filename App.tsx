@@ -17,6 +17,8 @@ const IceCubeIcon = ({ className = "w-6 h-6 md:w-8 md:h-8", spinning = false }: 
   </svg>
 );
 
+const debugAllowed = import.meta.env.DEV || new URLSearchParams(window.location.search).has('debug');
+
 const App: React.FC = () => {
   const [report, setReport] = useState<IceStatusReport | null>(null);
   const [appStatus, setAppStatus] = useState<AppStatus>(AppStatus.IDLE);
@@ -24,7 +26,7 @@ const App: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [isModalAnimating, setIsModalAnimating] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
-  
+
   // Transition sequence states
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(true);
   const [revealContent, setRevealContent] = useState(false);
@@ -60,6 +62,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!debugAllowed) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'd') {
         setDebugMode(prev => !prev);
@@ -68,6 +71,20 @@ const App: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const forceState = (canSkate: 'YES' | 'NO' | 'UNSURE') => {
+    const stub: IceStatusReport = {
+      summary: `[DEBUG] Forced state: ${canSkate}`,
+      canSkate,
+      lastUpdated: new Date().toLocaleString(),
+      sources: [],
+      warnings: [],
+    };
+    setReport(stub);
+    setAppStatus(AppStatus.SUCCESS);
+    setShowLoadingOverlay(false);
+    setRevealContent(true);
+  };
 
   const openModal = () => {
     setShowDetails(true);
@@ -249,42 +266,58 @@ const App: React.FC = () => {
       )}
 
       {debugMode && (
-        <div className="fixed bottom-8 left-8 z-[300] bg-[#FDF6E3] border-4 border-current p-6 shadow-2xl flex flex-col gap-4 min-w-56" style={{ color: currentBg }}>
+        <div className="fixed bottom-8 left-8 z-[300] bg-[#FDF6E3] border-4 border-current p-6 shadow-2xl flex flex-col gap-4 w-64" style={{ color: currentBg }}>
           <div className="flex items-center justify-between">
             <h4 className="font-display text-2xl">DEBUG</h4>
-            <span className="font-mono text-[9px] tracking-widest uppercase opacity-40">press D to close</span>
+            <span className="font-mono text-[9px] tracking-widest uppercase opacity-40">D to close</span>
           </div>
+
           <div className="h-px bg-current opacity-20" />
-          <div className="flex flex-col gap-1 font-mono text-[10px] uppercase tracking-widest opacity-60">
-            <div className="flex justify-between gap-6">
+
+          <div className="flex flex-col gap-1 font-mono text-[10px] uppercase tracking-widest">
+            <div className="flex justify-between gap-4 opacity-50">
               <span>status</span>
               <span className="font-bold">{appStatus}</span>
             </div>
-            <div className="flex justify-between gap-6">
+            <div className="flex justify-between gap-4 opacity-50">
               <span>can skate</span>
               <span className="font-bold">{report?.canSkate ?? '—'}</span>
             </div>
-            <div className="flex justify-between gap-6">
-              <span>logged</span>
-              <span className="font-bold">{report?.lastUpdated ?? '—'}</span>
-            </div>
           </div>
+
           <div className="h-px bg-current opacity-20" />
+
           <div className="flex flex-col gap-2">
+            <span className="font-mono text-[9px] tracking-widest uppercase opacity-40">Refresh sources</span>
             <button
               onClick={() => handleRefresh(true)}
               disabled={appStatus === AppStatus.LOADING}
               style={{ backgroundColor: currentBg }}
               className="flex items-center justify-center gap-2 px-4 py-2 text-[#FDF6E3] font-mono text-[10px] uppercase tracking-widest disabled:opacity-40"
             >
-              <svg className={`w-3 h-3 ${appStatus === AppStatus.LOADING ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-3 h-3 shrink-0 ${appStatus === AppStatus.LOADING ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Force Refresh
+              {appStatus === AppStatus.LOADING ? 'Loading…' : 'Fetch from API'}
             </button>
-            <button onClick={() => window.location.reload()} className="px-4 py-2 border-2 border-current font-mono text-[10px] uppercase tracking-widest hover:opacity-60 transition-opacity">
-              Reload Page
-            </button>
+          </div>
+
+          <div className="h-px bg-current opacity-20" />
+
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-[9px] tracking-widest uppercase opacity-40">Force state</span>
+            <div className="flex gap-2">
+              {(['YES', 'NO', 'UNSURE'] as const).map(state => (
+                <button
+                  key={state}
+                  onClick={() => forceState(state)}
+                  style={report?.canSkate === state ? { backgroundColor: currentBg } : {}}
+                  className={`flex-1 px-2 py-2 border-2 border-current font-mono text-[9px] uppercase tracking-wider transition-opacity hover:opacity-70 ${report?.canSkate === state ? 'text-[#FDF6E3]' : ''}`}
+                >
+                  {state === 'UNSURE' ? 'N/A' : state}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
