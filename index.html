@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Is Prygl Frozen?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --royal-blue: #004CCB;
+        --cream: #FDF6E3;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--royal-blue);
+        color: var(--cream);
+        -webkit-font-smoothing: antialiased;
+        margin: 0;
+        overflow: hidden;
+      }
+      .font-display {
+        font-family: 'Staatliches', cursive;
+        letter-spacing: 0.05em;
+      }
+      .font-mono {
+        font-family: 'JetBrains Mono', monospace;
+      }
+      
+      /* Blueprint Grid Pattern */
+      .blueprint-grid {
+        background-size: 60px 60px;
+        background-image: 
+          linear-gradient(to right, rgba(253, 246, 227, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(253, 246, 227, 0.1) 1px, transparent 1px);
+        pointer-events: none;
+      }
+      
+      .blueprint-line {
+        position: absolute;
+        background: rgba(253, 246, 227, 0.2);
+      }
+
+      /* Sticker Effect for text like "Cool Cats" */
+      .sticker-text {
+        text-shadow: 
+          -3px -3px 0 var(--royal-blue),  
+           3px -3px 0 var(--royal-blue),
+          -3px  3px 0 var(--royal-blue),
+           3px  3px 0 var(--royal-blue),
+           0px  0px 10px rgba(0,0,0,0.2);
+      }
+
+      .btn-regio {
+        background: var(--cream);
+        color: var(--royal-blue);
+        font-family: 'Staatliches', cursive;
+        font-size: 1.5rem;
+        padding: 1rem 3rem;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        border: 4px solid var(--cream);
+      }
+      .btn-regio:hover {
+        background: transparent;
+        color: var(--cream);
+      }
+
+      .btn-contrast {
+        background: transparent;
+        color: #FFFFFF;
+        font-family: 'Staatliches', cursive;
+        border: 6px solid #FFFFFF;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        text-transform: uppercase;
+      }
+      .btn-contrast:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.02);
+      }
+
+      @keyframes slide-reveal {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .animate-reveal {
+        animation: slide-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @keyframes cube-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .animate-cube-spin {
+        animation: cube-spin 4s linear infinite;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "marked": "https://esm.sh/marked@15.0.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "Prygl Ice Watcher",
+  "description": "A real-time AI-powered dashboard monitoring ice conditions at the Brno reservoir (Prygl) for skating and winter safety.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
