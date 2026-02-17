@@ -138,18 +138,6 @@ const App: React.FC = () => {
               </div>
             </div>
             
-            <button
-              onClick={() => handleRefresh(true)}
-              className={`
-                w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-current flex items-center justify-center
-                hover:bg-[#FDF6E3] hover:text-[#004CCB] transition-all duration-300
-                ${appStatus === AppStatus.LOADING ? 'animate-spin' : 'active:scale-90'}
-              `}
-            >
-              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
           </header>
 
           <main className="relative z-10 flex-1 flex flex-col items-center justify-center py-4">
@@ -261,10 +249,41 @@ const App: React.FC = () => {
       )}
 
       {debugMode && (
-        <div className="fixed bottom-8 left-8 z-[150] bg-[#FDF6E3] border-4 border-current p-6 shadow-2xl" style={{ color: currentBg }}>
-          <h4 className="font-display text-2xl mb-4">DEBUG PANEL</h4>
+        <div className="fixed bottom-8 left-8 z-[300] bg-[#FDF6E3] border-4 border-current p-6 shadow-2xl flex flex-col gap-4 min-w-56" style={{ color: currentBg }}>
+          <div className="flex items-center justify-between">
+            <h4 className="font-display text-2xl">DEBUG</h4>
+            <span className="font-mono text-[9px] tracking-widest uppercase opacity-40">press D to close</span>
+          </div>
+          <div className="h-px bg-current opacity-20" />
+          <div className="flex flex-col gap-1 font-mono text-[10px] uppercase tracking-widest opacity-60">
+            <div className="flex justify-between gap-6">
+              <span>status</span>
+              <span className="font-bold">{appStatus}</span>
+            </div>
+            <div className="flex justify-between gap-6">
+              <span>can skate</span>
+              <span className="font-bold">{report?.canSkate ?? '—'}</span>
+            </div>
+            <div className="flex justify-between gap-6">
+              <span>logged</span>
+              <span className="font-bold">{report?.lastUpdated ?? '—'}</span>
+            </div>
+          </div>
+          <div className="h-px bg-current opacity-20" />
           <div className="flex flex-col gap-2">
-            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-current text-[#FDF6E3] font-mono text-[10px] uppercase tracking-widest">Reload Page</button>
+            <button
+              onClick={() => handleRefresh(true)}
+              disabled={appStatus === AppStatus.LOADING}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-current text-[#FDF6E3] font-mono text-[10px] uppercase tracking-widest disabled:opacity-40"
+            >
+              <svg className={`w-3 h-3 ${appStatus === AppStatus.LOADING ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Force Refresh
+            </button>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 border-2 border-current font-mono text-[10px] uppercase tracking-widest hover:bg-current hover:text-[#FDF6E3] transition-colors">
+              Reload Page
+            </button>
           </div>
         </div>
       )}
