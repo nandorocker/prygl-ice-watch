@@ -6,6 +6,7 @@ export interface GroundingSource {
 
 export interface IceStatusReport {
   summary: string;
+  summaryCs: string;
   canSkate: 'YES' | 'NO' | 'UNSURE';
   iceThickness?: string;
   lastUpdated: string;
