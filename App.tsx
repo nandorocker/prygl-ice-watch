@@ -134,7 +134,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="h-screen w-screen relative overflow-hidden flex flex-col selection:bg-[#FDF6E3] selection:text-[#004CCB] transition-colors duration-1000"
+      className="w-screen relative flex flex-col md:h-screen md:overflow-hidden selection:bg-[#FDF6E3] selection:text-[#004CCB] transition-colors duration-1000"
       style={{ backgroundColor: bgColor }}
     >
       <BackgroundScene bgColor={bgColor} variationIndex={bgVariation} />
@@ -157,7 +157,7 @@ const App: React.FC = () => {
 
       {/* Main Content Reveal */}
       {revealContent && (
-        <div className="flex-1 flex flex-col animate-reveal">
+        <div className="flex flex-col animate-reveal min-h-[100dvh] md:flex-1 md:min-h-0">
           <header className="relative z-20 w-full px-6 md:px-12 pt-6 md:pt-10 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 md:w-14 md:h-14 border-4 border-current rounded-full flex items-center justify-center">
@@ -172,7 +172,7 @@ const App: React.FC = () => {
             <LanguageSelector language={language} onChange={setLanguage} />
           </header>
 
-          <main className="relative z-10 flex-1 flex flex-col items-center justify-center py-4">
+          <main className="relative z-10 md:flex-1 flex flex-col items-center justify-center py-4">
             {appStatus === AppStatus.ERROR && !report && (
               <div className="text-center">
                 <h3 className="text-6xl md:text-8xl font-display mb-4">{t('main.signalLost')}</h3>
@@ -184,16 +184,16 @@ const App: React.FC = () => {
             {report && (
               <div className="w-full flex flex-col items-center">
                 <StatusIndicator status={report.canSkate} timestamp={report.lastUpdated} statusColor={currentBg} t={t} language={language} />
-                <div className="flex flex-col items-center gap-6 md:gap-8 mb-8 md:mb-12">
+                <div className="flex flex-col items-center gap-6 md:gap-8 mt-8 md:mt-0 mb-8 md:mb-12">
                   <button
                     onClick={openModal}
-                    className="btn-contrast shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] active:translate-x-1 active:translate-y-1 active:shadow-none text-xl md:text-3xl px-6 md:px-10 py-5"
+                    className="btn-contrast shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] active:translate-x-1 active:translate-y-1 active:shadow-none text-xl md:text-3xl px-6 md:px-10 py-3 md:py-5 w-[80vw] md:w-auto"
                   >
                     {t('main.readMore')}
                   </button>
                 </div>
 
-                <div className="w-full max-w-4xl px-4 flex flex-col items-center">
+                <div className="w-full max-w-4xl px-4 flex flex-col items-center mb-10 md:mb-0">
                   <div className="w-full border-t-2 border-[#FDF6E3]/20 mb-4" />
                   <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-8 font-mono text-[10px] md:text-[11px] uppercase tracking-widest text-center opacity-60">
                     <div className="flex items-center gap-2 whitespace-nowrap">
@@ -216,13 +216,13 @@ const App: React.FC = () => {
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                 <span className="font-mono text-[9px] font-bold tracking-widest uppercase">{t('footer.independentFeed')}</span>
               </div>
-              <p className="text-[9px] font-mono leading-relaxed opacity-40 italic uppercase">
+              <p className="text-[11px] md:text-[9px] font-mono leading-relaxed opacity-40 italic uppercase">
                 {t('footer.disclaimer')}
               </p>
             </div>
 
             <div className="text-right flex flex-col items-center md:items-end">
-              <a href="https://nan.do" target="_blank" rel="noopener noreferrer" className="font-display text-xl md:text-2xl tracking-tightest hover:opacity-70 transition-opacity flex items-center gap-2">
+              <a href="https://nan.do" target="_blank" rel="noopener noreferrer" className="font-display text-base md:text-2xl tracking-tightest hover:opacity-70 transition-opacity flex items-center gap-2">
                 {t('footer.madeBy')}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -256,7 +256,7 @@ const App: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-8 pt-8 md:p-16">
-              <div className="markdown-content text-xl md:text-3xl font-display italic mb-16 leading-tight border-l-8 border-current pl-6 py-2" dangerouslySetInnerHTML={renderMarkdown(language === 'cs' && report.summaryCs ? report.summaryCs : report.summary)} />
+              <div className="markdown-content text-xl md:text-3xl font-display italic mb-16 leading-tight border-l-8 border-black text-black pl-6 py-2" dangerouslySetInnerHTML={renderMarkdown(language === 'cs' && report.summaryCs ? report.summaryCs : report.summary)} />
               {report.sources && report.sources.length > 0 && (
                 <div className="border-t-2 border-current pt-6 mt-2">
                   <p className="font-mono text-[9px] tracking-widest uppercase opacity-50 mb-3">{t('modal.sources')}</p>
