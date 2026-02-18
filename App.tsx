@@ -146,6 +146,10 @@ const IceCubeLogo = ({ bgColor }: { bgColor: string }) => {
   };
 
   React.useEffect(() => {
+    setCube(S_FULL);
+  }, []);
+
+  React.useEffect(() => {
     const logoEl = svgRef.current?.parentElement;
     if (!logoEl) return;
     logoEl.addEventListener('mouseenter', startMelting);
@@ -198,20 +202,13 @@ const App: React.FC = () => {
   const [bgVariation, setBgVariation] = useState<number | undefined>(undefined);
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
 
-  // Keep track of the interval so it can be cleared
-  const msgIntervalRef = React.useRef<number | null>(null);
 
   const handleRefresh = async (force = false) => {
     setAppStatus(AppStatus.LOADING);
     setRevealContent(false);
     setShowLoadingOverlay(true);
-    setLoadingMsgIndex(0);
+    setLoadingMsgIndex(Math.floor(Math.random() * 5));
     setError(null);
-
-    // Start cycling messages every 3 seconds
-    msgIntervalRef.current = window.setInterval(() => {
-      setLoadingMsgIndex(i => (i + 1) % 5);
-    }, 3000);
 
     try {
       const data = await fetchPryglStatus(force);
@@ -219,13 +216,6 @@ const App: React.FC = () => {
       setAppStatus(AppStatus.SUCCESS);
 
       const newBg = data.canSkate === 'YES' ? '#006B3C' : data.canSkate === 'NO' ? '#B91C1C' : '#004CCB';
-
-      // Clear the message cycling interval
-      if (msgIntervalRef.current !== null) {
-        clearInterval(msgIntervalRef.current);
-        msgIntervalRef.current = null;
-      }
-      setLoadingMsgIndex(0);
 
       // Sequence: 1. Brief pause, then fade out loader
       setTimeout(() => {
@@ -240,11 +230,6 @@ const App: React.FC = () => {
         }, 150);
       }, 300);
     } catch (err: any) {
-      // Clear the message cycling interval on error
-      if (msgIntervalRef.current !== null) {
-        clearInterval(msgIntervalRef.current);
-        msgIntervalRef.current = null;
-      }
       setError(t('main.signalLost'));
       setAppStatus(AppStatus.ERROR);
       setShowLoadingOverlay(false);
