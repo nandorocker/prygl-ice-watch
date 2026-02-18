@@ -14,8 +14,8 @@ export function createSphereBulge(): GridVariation {
   const ROWS = 32;
   const PTS = 80;        // vertices per line
   const MAX_AMP = 8.0;   // max Z displacement at centre (scaled with SIZE)
-  const BREATHE_SPEED = 0.9;
-  const ROTATE_SPEED = 0.08; // rad / second
+  const BREATHE_SPEED = 1.3;
+  const ROTATE_SPEED = 0.13; // rad / second
 
   const material = makeLineMaterial();
   const group = new THREE.Group();

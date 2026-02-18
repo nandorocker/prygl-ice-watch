@@ -32,8 +32,8 @@ export function createTiltedDrift(): GridVariation {
   spinGroup.add(seesawGroup);
 
   const SWING = Math.PI / 6;   // ±30°
-  const PERIOD = 7.5;           // seconds for a full cycle
-  const Z_SPIN = 0.09;          // rad/s — steady face-spin
+  const PERIOD = 2.5;           // seconds for a full cycle
+  const Z_SPIN = 0.27;          // rad/s — steady face-spin
 
   function update(time: number) {
     const phase = (time % PERIOD) / PERIOD;
