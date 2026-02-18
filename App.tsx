@@ -200,14 +200,12 @@ const App: React.FC = () => {
   const [revealContent, setRevealContent] = useState(false);
   const [bgColor, setBgColor] = useState('#004CCB');
   const [bgVariation, setBgVariation] = useState<number | undefined>(undefined);
-  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
-
+  const [loadingMsgIndex] = useState(() => Math.floor(Math.random() * 5));
 
   const handleRefresh = async (force = false) => {
     setAppStatus(AppStatus.LOADING);
     setRevealContent(false);
     setShowLoadingOverlay(true);
-    setLoadingMsgIndex(Math.floor(Math.random() * 5));
     setError(null);
 
     try {
