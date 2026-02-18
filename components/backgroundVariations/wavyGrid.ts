@@ -96,5 +96,13 @@ export function createWavyGrid(): GridVariation {
     material.dispose();
   }
 
-  return { objects: [group], update, dispose };
+  function resize(cam: THREE.Camera) {
+    const c = cam as THREE.PerspectiveCamera;
+    const visibleH = 2 * Math.tan((c.fov * Math.PI / 180) / 2) * c.position.z;
+    const visibleW = visibleH * c.aspect;
+    const scale = (Math.max(visibleW, visibleH) / SIZE) * 1.05;
+    group.scale.set(scale, scale, 1);
+  }
+
+  return { objects: [group], update, dispose, resize };
 }

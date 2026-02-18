@@ -7,4 +7,6 @@ export interface GridVariation {
   update(time: number): void;
   /** Clean up geometries, materials, etc. */
   dispose(): void;
+  /** Rescale to fill the viewport; called on init and on every resize */
+  resize?(camera: THREE.Camera): void;
 }

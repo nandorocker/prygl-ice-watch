@@ -53,6 +53,7 @@ export default function BackgroundScene({ bgColor, variationIndex }: Props) {
       return;
     }
     variation.objects.forEach((obj) => scene.add(obj));
+    variation.resize?.(camera);
 
     // --- Color lerp state ---
     const currentColor = hexToColor(bgColorRef.current);
@@ -88,6 +89,7 @@ export default function BackgroundScene({ bgColor, variationIndex }: Props) {
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      variation.resize?.(camera);
     });
     resizeObserver.observe(canvas);
 
