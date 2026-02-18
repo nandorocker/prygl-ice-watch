@@ -27,9 +27,25 @@ export const translations: Translations = {
     en: 'Is Prygl Frozen?',
     cs: 'Je Prygl zamrzlý?',
   },
-  'loading.consulting': {
+  'loading.msg.0': {
     en: 'Consulting sources...',
     cs: 'Konzultuji zdroje...',
+  },
+  'loading.msg.1': {
+    en: 'Checking the ice...',
+    cs: 'Kontroluji led...',
+  },
+  'loading.msg.2': {
+    en: 'Almost there...',
+    cs: 'Skoro hotovo...',
+  },
+  'loading.msg.3': {
+    en: 'Still thinking...',
+    cs: 'Stále přemýšlím...',
+  },
+  'loading.msg.4': {
+    en: 'Ice takes time...',
+    cs: 'Led chvíli trvá...',
   },
 
   // Main content

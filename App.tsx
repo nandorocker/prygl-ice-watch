@@ -38,18 +38,36 @@ const App: React.FC = () => {
   const [revealContent, setRevealContent] = useState(false);
   const [bgColor, setBgColor] = useState('#004CCB');
   const [bgVariation, setBgVariation] = useState<number | undefined>(undefined);
+  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
+
+  // Keep track of the interval so it can be cleared
+  const msgIntervalRef = React.useRef<number | null>(null);
 
   const handleRefresh = async (force = false) => {
     setAppStatus(AppStatus.LOADING);
     setRevealContent(false);
     setShowLoadingOverlay(true);
+    setLoadingMsgIndex(0);
     setError(null);
+
+    // Start cycling messages every 3 seconds
+    msgIntervalRef.current = window.setInterval(() => {
+      setLoadingMsgIndex(i => (i + 1) % 5);
+    }, 3000);
+
     try {
       const data = await fetchPryglStatus(force);
       setReport(data);
       setAppStatus(AppStatus.SUCCESS);
 
       const newBg = data.canSkate === 'YES' ? '#006B3C' : data.canSkate === 'NO' ? '#B91C1C' : '#004CCB';
+
+      // Clear the message cycling interval
+      if (msgIntervalRef.current !== null) {
+        clearInterval(msgIntervalRef.current);
+        msgIntervalRef.current = null;
+      }
+      setLoadingMsgIndex(0);
 
       // Sequence: 1. Brief pause, then fade out loader
       setTimeout(() => {
@@ -64,6 +82,11 @@ const App: React.FC = () => {
         }, 150);
       }, 300);
     } catch (err: any) {
+      // Clear the message cycling interval on error
+      if (msgIntervalRef.current !== null) {
+        clearInterval(msgIntervalRef.current);
+        msgIntervalRef.current = null;
+      }
       setError(t('main.signalLost'));
       setAppStatus(AppStatus.ERROR);
       setShowLoadingOverlay(false);
@@ -150,7 +173,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center">
             <h1 className="font-display text-4xl md:text-6xl leading-none uppercase text-[#FDF6E3]">{t('loading.title')}</h1>
             <div className="h-1 w-24 bg-[#FDF6E3] mt-4 opacity-30"></div>
-            <span className="font-mono text-[9px] md:text-[10px] tracking-[0.6em] uppercase text-[#FDF6E3] mt-4 opacity-60">{t('loading.consulting')}</span>
+            <span className="font-mono text-[9px] md:text-[10px] tracking-[0.6em] uppercase text-[#FDF6E3] mt-4 opacity-60 transition-opacity duration-500">{t(`loading.msg.${loadingMsgIndex}`)}</span>
           </div>
         </div>
       </div>
