@@ -134,7 +134,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="w-screen relative flex flex-col md:h-screen md:overflow-hidden selection:bg-[#FDF6E3] selection:text-[#004CCB] transition-colors duration-1000"
+      className="w-screen relative flex flex-col desktop-locked selection:bg-[#FDF6E3] selection:text-[#004CCB] transition-colors duration-1000"
       style={{ backgroundColor: bgColor }}
     >
       <BackgroundScene bgColor={bgColor} variationIndex={bgVariation} />
@@ -157,7 +157,7 @@ const App: React.FC = () => {
 
       {/* Main Content Reveal */}
       {revealContent && (
-        <div className="flex flex-col animate-reveal min-h-[100dvh] md:flex-1 md:min-h-0">
+        <div className="flex flex-col animate-reveal min-h-[100dvh] desktop-locked-child">
           <header className="relative z-20 w-full px-6 md:px-12 pt-6 md:pt-10 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 md:w-14 md:h-14 border-4 border-current rounded-full flex items-center justify-center">

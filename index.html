@@ -23,7 +23,11 @@
         margin: 0;
         overflow: hidden;
       }
-      @media (max-width: 767px) {
+      @media (min-height: 600px) and (min-width: 768px) {
+        .desktop-locked { height: 100vh; overflow: hidden; }
+        .desktop-locked-child { flex: 1; min-height: 0; }
+      }
+      @media (max-width: 767px), (max-height: 600px) {
         body {
           overflow: visible;
           overflow-y: auto;
