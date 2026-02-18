@@ -13,12 +13,16 @@ const reportPrompt = `
   - If ice thickness is known, state it. If the date of the measurement is known, state it. If there are warnings, state them. Otherwise say nothing about those fields.
   - Keep the response short. 2–4 sentences maximum.
 
-  End your response with exactly one of:
+  Provide the report in BOTH English and Czech.
+  Format your response as:
+  ---
+  EN: [your English report here]
+  CS: [your Czech report here]
+  ---
+  Then end with exactly one of:
   SKATING_STATUS: YES
   SKATING_STATUS: NO
   SKATING_STATUS: UNSURE
-
-  Write in English only.
 `;
 
 async function callOpenRouter(messages: { role: string; content: string }[], useWebPlugin: boolean) {
@@ -47,7 +51,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const today = new Date().toISOString().split('T')[0];
 
   try {
-    let text: string;
+    let textEn: string;
+    let textCs: string;
     let sources: { title: string; uri: string }[] = [];
 
     try {
@@ -66,7 +71,10 @@ ${plainText.slice(0, 8000)}
 Based ONLY on this content, provide the ice skating safety report. ${reportPrompt}`,
       }], false);
 
-      text = data.choices[0]?.message?.content || 'Could not retrieve summary.';
+      const fullText = data.choices[0]?.message?.content || '';
+      const { en, cs } = parseBilingualResponse(fullText);
+      textEn = en || 'Could not retrieve summary.';
+      textCs = cs || textEn; // Fallback to English if Czech missing
       sources = [{ title: 'prygl.net', uri: 'https://prygl.net' }];
     } catch (fetchError) {
       console.warn('Direct prygl.net fetch failed, falling back to web search:', fetchError);
@@ -87,27 +95,39 @@ Based ONLY on this content, provide the ice skating safety report. ${reportPromp
 
         const secondData = await callOpenRouter([{
           role: 'user',
-          content: `The following web search results have already been retrieved for you. Do NOT perform any additional searches. Based only on these results, write the ice skating safety report.\n\nSEARCH RESULTS:\n${searchContext}\n\n---\n\n${prompt}`,
+          content: `The following web search results have already been retrieved for you. Do NOT perform any additional searches. Based only on these results, write the ice skating safety report.
+
+SEARCH RESULTS:
+${searchContext}
+
+---
+${prompt}`,
         }], false);
 
-        text = secondData.choices[0]?.message?.content || 'Could not retrieve summary.';
+        const fullText = secondData.choices[0]?.message?.content || '';
+        const { en, cs } = parseBilingualResponse(fullText);
+        textEn = en || 'Could not retrieve summary.';
+        textCs = cs || textEn;
         sources = citationAnnotations.map((a: any) => ({
           title: a.url_citation.title || a.url_citation.url,
           uri: a.url_citation.url,
         }));
       } else {
-        text = firstContent || 'Could not retrieve summary.';
+        const { en, cs } = parseBilingualResponse(firstContent);
+        textEn = en || 'Could not retrieve summary.';
+        textCs = cs || textEn;
       }
     }
 
     let canSkate: 'YES' | 'NO' | 'UNSURE' = 'UNSURE';
-    const statusMatch = text.match(/SKATING_STATUS:\s*(YES|NO|UNSURE)/i);
+    const statusMatch = textEn.match(/SKATING_STATUS:\s*(YES|NO|UNSURE)/i) || textCs.match(/SKATING_STATUS:\s*(YES|NO|UNSURE)/i);
     if (statusMatch) {
       canSkate = statusMatch[1].toUpperCase() as 'YES' | 'NO' | 'UNSURE';
     }
 
     const report = {
-      summary: text,
+      summary: textEn,
+      summaryCs: textCs,
       canSkate,
       lastUpdated: new Date().toLocaleString(),
       sources,
@@ -122,4 +142,24 @@ Based ONLY on this content, provide the ice skating safety report. ${reportPromp
     console.error('Error in /api/status:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
+}
+
+function parseBilingualResponse(text: string): { en: string; cs: string } {
+  // Try to extract EN and CS sections
+  const enMatch = text.match(/EN:\s*([\s\S]*?)(?:CS:|---|$)/i);
+  const csMatch = text.match(/CS:\s*([\s\S]*?)(?:EN:|---|$)/i);
+
+  let en = enMatch?.[1]?.trim() || text;
+  let cs = csMatch?.[1]?.trim() || '';
+
+  // If no Czech found, try to translate basic response
+  if (!cs && en) {
+    cs = en; // Will be handled by frontend fallback
+  }
+
+  // Clean up status from summaries
+  en = en.replace(/SKATING_STATUS:\s*(YES|NO|UNSURE)/gi, '').trim();
+  cs = cs.replace(/SKATING_STATUS:\s*(YES|NO|UNSURE)/gi, '').trim();
+
+  return { en, cs };
 }

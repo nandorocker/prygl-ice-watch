@@ -1,45 +1,48 @@
 
 import React, { useMemo } from 'react';
+import { Language } from './LanguageSelector';
 
 interface StatusIndicatorProps {
   status: 'YES' | 'NO' | 'UNSURE';
   timestamp: string;
   statusColor: string;
+  t: (key: string) => string;
+  language: Language;
 }
 
-const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, timestamp, statusColor }) => {
+const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, timestamp, statusColor, t, language }) => {
   const tagOptions = useMemo(() => ({
-    YES: ["ICE ICE BABY", "CHILL VIBES", "SHARP BLADES", "GLIDE MODE", "FROZEN PIZZA", "COOL CAT"],
-    NO: ["SOGGY PAWS", "STAY DRY", "NOPE", "SWIM TIME?", "MELT CITY", "THIN SKIN"],
-    UNSURE: ["MAYBE BABY", "STILL COLD", "LOADING...", "ICE SPY", "THINKING...", "BRRR?"]
-  }), []);
+    YES: [0, 1, 2, 3, 4, 5].map(i => t(`status.yes.tag.${i}`)),
+    NO:  [0, 1, 2, 3, 4, 5].map(i => t(`status.no.tag.${i}`)),
+    UNSURE: [0, 1, 2, 3, 4, 5].map(i => t(`status.unsure.tag.${i}`)),
+  }), [t, language]);
 
   const configs = {
     YES: {
-      label: "SKATING IS GOOD!",
-      sub: "ICE IS SOLID AND READY FOR GLIDING",
-      tagBg: "#004CCB", // Royal Blue
-      tagText: "#FDF6E3", // Cream
+      label: t('status.yes.label'),
+      sub: t('status.yes.sub'),
+      tagBg: "#004CCB",
+      tagText: "#FDF6E3",
       tagBorder: "#FDF6E3"
     },
     NO: {
-      label: "NO SKATING TODAY",
-      sub: "HAZARDOUS SURFACE DETECTED",
-      tagBg: "#FACC15", // Bright Yellow
-      tagText: "#B91C1C", // Danger Red
+      label: t('status.no.label'),
+      sub: t('status.no.sub'),
+      tagBg: "#FACC15",
+      tagText: "#B91C1C",
       tagBorder: "#B91C1C"
     },
     UNSURE: {
-      label: "DATA PENDING",
-      sub: "TELEMETRY SIGNAL UNSTABLE",
-      tagBg: "#FDF6E3", // Cream
-      tagText: "#004CCB", // Royal Blue
+      label: t('status.unsure.label'),
+      sub: t('status.unsure.sub'),
+      tagBg: "#FDF6E3",
+      tagText: "#004CCB",
       tagBorder: "#004CCB"
     }
   };
 
   const config = configs[status];
-  
+
   const randomTag = useMemo(() => {
     const options = tagOptions[status];
     return options[Math.floor(Math.random() * options.length)];
@@ -52,7 +55,7 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, timestamp, st
         <div className="h-px w-8 md:w-12 bg-current"></div>
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 md:w-6 md:h-6 border border-current rounded-full flex items-center justify-center text-[8px]">01</div>
-          <span>Active Feed</span>
+          <span>{t('status.activeFeed')}</span>
         </div>
         <div className="h-px w-8 md:w-12 bg-current"></div>
       </div>
@@ -64,14 +67,14 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, timestamp, st
              <span key={i} className="block">{word}</span>
            ))}
          </h2>
-         
+
          {/* Floating Tag - Moved further right and colored according to status */}
-         <div 
+         <div
           className="absolute -top-4 -right-12 md:-top-8 md:-right-20 font-display px-4 py-1 text-xl md:text-4xl rotate-12 shadow-xl border-4 z-20"
-          style={{ 
-            backgroundColor: config.tagBg, 
-            color: config.tagText, 
-            borderColor: config.tagBorder 
+          style={{
+            backgroundColor: config.tagBg,
+            color: config.tagText,
+            borderColor: config.tagBorder
           }}
          >
            {randomTag}
