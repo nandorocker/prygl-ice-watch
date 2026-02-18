@@ -53,6 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     let textEn: string;
     let textCs: string;
+    let canSkate: 'YES' | 'NO' | 'UNSURE' = 'UNSURE';
     let sources: { title: string; uri: string }[] = [];
 
     try {
@@ -72,9 +73,10 @@ Based ONLY on this content, provide the ice skating safety report. ${reportPromp
       }], false);
 
       const fullText = data.choices[0]?.message?.content || '';
-      const { en, cs } = parseBilingualResponse(fullText);
+      const { en, cs, status } = parseBilingualResponse(fullText);
       textEn = en || 'Could not retrieve summary.';
       textCs = cs || textEn; // Fallback to English if Czech missing
+      if (status) canSkate = status;
       sources = [{ title: 'prygl.net', uri: 'https://prygl.net' }];
     } catch (fetchError) {
       console.warn('Direct prygl.net fetch failed, falling back to web search:', fetchError);
@@ -105,25 +107,22 @@ ${prompt}`,
         }], false);
 
         const fullText = secondData.choices[0]?.message?.content || '';
-        const { en, cs } = parseBilingualResponse(fullText);
+        const { en, cs, status } = parseBilingualResponse(fullText);
         textEn = en || 'Could not retrieve summary.';
         textCs = cs || textEn;
+        if (status) canSkate = status;
         sources = citationAnnotations.map((a: any) => ({
           title: a.url_citation.title || a.url_citation.url,
           uri: a.url_citation.url,
         }));
       } else {
-        const { en, cs } = parseBilingualResponse(firstContent);
+        const { en, cs, status } = parseBilingualResponse(firstContent);
         textEn = en || 'Could not retrieve summary.';
         textCs = cs || textEn;
+        if (status) canSkate = status;
       }
     }
 
-    let canSkate: 'YES' | 'NO' | 'UNSURE' = 'UNSURE';
-    const statusMatch = textEn.match(/SKATING_STATUS:\s*(YES|NO|UNSURE)/i) || textCs.match(/SKATING_STATUS:\s*(YES|NO|UNSURE)/i);
-    if (statusMatch) {
-      canSkate = statusMatch[1].toUpperCase() as 'YES' | 'NO' | 'UNSURE';
-    }
 
     const report = {
       summary: textEn,
@@ -144,7 +143,11 @@ ${prompt}`,
   }
 }
 
-function parseBilingualResponse(text: string): { en: string; cs: string } {
+function parseBilingualResponse(text: string): { en: string; cs: string; status: 'YES' | 'NO' | 'UNSURE' | null } {
+  // Extract status from the full raw text before any stripping
+  const statusMatch = text.match(/SKATING_STATUS:\s*(YES|NO|UNSURE)/i);
+  const status = statusMatch ? statusMatch[1].toUpperCase() as 'YES' | 'NO' | 'UNSURE' : null;
+
   // Try to extract EN and CS sections
   const enMatch = text.match(/EN:\s*([\s\S]*?)(?:CS:|---|$)/i);
   const csMatch = text.match(/CS:\s*([\s\S]*?)(?:EN:|---|$)/i);
@@ -161,5 +164,5 @@ function parseBilingualResponse(text: string): { en: string; cs: string } {
   en = en.replace(/SKATING_STATUS:\s*(YES|NO|UNSURE)/gi, '').trim();
   cs = cs.replace(/SKATING_STATUS:\s*(YES|NO|UNSURE)/gi, '').trim();
 
-  return { en, cs };
+  return { en, cs, status };
 }
