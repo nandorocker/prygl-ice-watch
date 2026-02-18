@@ -136,8 +136,6 @@ const App: React.FC = () => {
       style={{ backgroundColor: bgColor }}
     >
       <div className="fixed inset-0 blueprint-grid z-0"></div>
-      <div className="fixed top-0 left-1/2 w-px h-full bg-[#FDF6E3] opacity-10 -translate-x-1/2 z-0"></div>
-      <div className="fixed top-1/2 left-0 w-full h-px bg-[#FDF6E3] opacity-10 -translate-y-1/2 z-0"></div>
 
       {/* Loading Overlay */}
       <div
