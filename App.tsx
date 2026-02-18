@@ -4,6 +4,7 @@ import { fetchPryglStatus } from './services/geminiService';
 import { IceStatusReport, AppStatus } from './types';
 import StatusIndicator from './components/StatusIndicator';
 import LanguageSelector, { Language, useTranslation, getInitialLanguage } from './components/LanguageSelector';
+import BackgroundScene from './components/BackgroundScene';
 import { marked } from 'marked';
 
 // Refined Isometric Cube Icon - Architecturally balanced
@@ -36,6 +37,7 @@ const App: React.FC = () => {
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(true);
   const [revealContent, setRevealContent] = useState(false);
   const [bgColor, setBgColor] = useState('#004CCB');
+  const [bgVariation, setBgVariation] = useState<number | undefined>(undefined);
 
   const handleRefresh = async (force = false) => {
     setAppStatus(AppStatus.LOADING);
@@ -135,7 +137,7 @@ const App: React.FC = () => {
       className="h-screen w-screen relative overflow-hidden flex flex-col selection:bg-[#FDF6E3] selection:text-[#004CCB] transition-colors duration-1000"
       style={{ backgroundColor: bgColor }}
     >
-      <div className="fixed inset-0 blueprint-grid z-0"></div>
+      <BackgroundScene bgColor={bgColor} variationIndex={bgVariation} />
 
       {/* Loading Overlay */}
       <div
@@ -329,6 +331,24 @@ const App: React.FC = () => {
                   className={`flex-1 px-2 py-2 border-2 border-current font-mono text-[9px] uppercase tracking-wider transition-opacity hover:opacity-70 ${report?.canSkate === state ? 'text-[#FDF6E3]' : ''}`}
                 >
                   {state === 'UNSURE' ? 'N/A' : state}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-current opacity-20" />
+
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-[9px] tracking-widest uppercase opacity-40">Background</span>
+            <div className="flex gap-2">
+              {(['SPHERE', 'WAVY', 'TILT'] as const).map((label, i) => (
+                <button
+                  key={label}
+                  onClick={() => setBgVariation(i)}
+                  style={bgVariation === i ? { backgroundColor: currentBg } : {}}
+                  className={`flex-1 px-2 py-2 border-2 border-current font-mono text-[9px] uppercase tracking-wider transition-opacity hover:opacity-70 ${bgVariation === i ? 'text-[#FDF6E3]' : ''}`}
+                >
+                  {label}
                 </button>
               ))}
             </div>
