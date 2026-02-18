@@ -179,6 +179,7 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="w-full max-w-4xl px-4 flex flex-col items-center">
+                  <div className="w-full border-t-2 border-[#FDF6E3]/20 mb-4" />
                   <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-8 font-mono text-[10px] md:text-[11px] uppercase tracking-widest text-center opacity-60">
                     <div className="flex items-center gap-2 whitespace-nowrap">
                       <span className="opacity-50">COORD:</span>
@@ -225,12 +226,12 @@ const App: React.FC = () => {
       {/* Observation Modal */}
       {showDetails && report && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
-          <div className={`absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-500 ${isModalAnimating ? 'opacity-100' : 'opacity-0'}`} onClick={closeModal}></div>
+          <div className={`absolute inset-0 bg-black/50 backdrop-blur-md transition-opacity duration-500 ${isModalAnimating ? 'opacity-100' : 'opacity-0'}`} onClick={closeModal}></div>
           <div className={`relative w-full max-w-5xl bg-[#FDF6E3] text-current shadow-2xl overflow-hidden flex flex-col border-t-[12px] md:border-[12px] border-current max-h-[90vh] transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isModalAnimating ? 'translate-y-0' : 'translate-y-full'}`} style={{ color: currentBg }}>
             <div className="flex justify-between items-start p-8 pb-4 md:p-16 md:pb-6 bg-[#FDF6E3] shrink-0 border-b-4 border-current">
                <div>
                 <div className="flex items-center gap-4 mb-4">
-                  <span className="bg-current text-[#FDF6E3] px-3 py-1 font-mono text-[10px] tracking-widest uppercase">Observation</span>
+                  <span className="bg-current text-white px-3 py-1 font-mono text-[10px] tracking-widest uppercase">Observation</span>
                   <span className="font-mono text-[10px] tracking-widest uppercase opacity-40">Series: A-42</span>
                 </div>
                 <h3 className="text-5xl md:text-8xl font-display leading-[0.85] tracking-tighter">ICE LOG<br/>REPORT</h3>
