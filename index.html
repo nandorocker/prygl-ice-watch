@@ -119,6 +119,16 @@
       .markdown-content strong {
         font-weight: 900;
       }
+
+      /* Logo drip animation */
+      @keyframes dripFall {
+        0%   { opacity: 1; transform: translateY(0); }
+        75%  { opacity: 1; }
+        100% { opacity: 0; transform: translateY(80px); }
+      }
+      .drip-falling {
+        animation: dripFall 1.1s cubic-bezier(0.9, 0, 1, 1) forwards;
+      }
     </style>
   <script type="importmap">
 {

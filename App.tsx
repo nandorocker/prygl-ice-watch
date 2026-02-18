@@ -19,6 +19,164 @@ const IceCubeIcon = ({ className = "w-6 h-6 md:w-8 md:h-8", spinning = false }: 
   </svg>
 );
 
+// Interactive Logo with Melt Microinteraction
+const IceCubeLogo = ({ bgColor }: { bgColor: string }) => {
+  const svgRef = React.useRef<SVGSVGElement>(null);
+  const dripLayerRef = React.useRef<SVGGElement>(null);
+  const faceTopRef = React.useRef<SVGPolygonElement>(null);
+  const faceLeftRef = React.useRef<SVGPolygonElement>(null);
+  const faceRightRef = React.useRef<SVGPolygonElement>(null);
+
+  const stateRef = React.useRef({
+    melting: false,
+    meltStart: null as number | null,
+    meltFrom: 32,
+    currentS: 32,
+    rafId: null as number | null,
+    meltInterval: null as number | null,
+    freezeTimeout: null as number | null,
+    dropIndex: 0,
+    freezeFrom: 32,
+  });
+
+  const S_FULL = 32;
+  const S_MIN = 0;
+  const MELT_DURATION = 6000;
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  const fmt = (pts: [number, number][]) => {
+    return pts.map(([x, y]) => `${x},${y.toFixed(2)}`).join(' ');
+  };
+
+  const setCube = (S: number) => {
+    const TL = [15, 66 - S] as [number, number];
+    const TR = [85, 66 - S] as [number, number];
+    const TF = [50, 88 - S] as [number, number];
+    const TC = [50, 44 - S] as [number, number];
+    const BL = [15, 66] as [number, number];
+    const BR = [85, 66] as [number, number];
+    const BC = [50, 88] as [number, number];
+
+    if (faceTopRef.current) faceTopRef.current.setAttribute('points', fmt([TC, TL, TF, TR]));
+    if (faceLeftRef.current) faceLeftRef.current.setAttribute('points', fmt([TL, BL, BC, TF]));
+    if (faceRightRef.current) faceRightRef.current.setAttribute('points', fmt([TR, TF, BC, BR]));
+  };
+
+  const easeInOut = (t: number) => {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  };
+
+  const spawnDrip = () => {
+    if (!dripLayerRef.current) return;
+    const DRIP_PTS = [
+      { x: 50, y: 88, w: 40, h: 52 },
+      { x: 32.5, y: 77, w: 32, h: 42 },
+      { x: 67.5, y: 77, w: 32, h: 42 },
+    ];
+    const pt = DRIP_PTS[stateRef.current.dropIndex % DRIP_PTS.length];
+    stateRef.current.dropIndex++;
+
+    const use = document.createElementNS(svgNS, 'use');
+    use.setAttribute('href', '#drop');
+    use.setAttribute('x', (pt.x - pt.w / 2).toString());
+    use.setAttribute('y', pt.y.toString());
+    use.setAttribute('width', pt.w.toString());
+    use.setAttribute('height', pt.h.toString());
+    use.setAttribute('fill', '#FDF6E3');
+    use.setAttribute('stroke', bgColor);
+    use.setAttribute('stroke-width', '30');
+    use.setAttribute('paint-order', 'stroke');
+    use.classList.add('drip-falling');
+    dripLayerRef.current.appendChild(use);
+    use.addEventListener('animationend', () => use.remove(), { once: true });
+  };
+
+  const meltFrame = (ts: number) => {
+    const state = stateRef.current;
+    if (!state.melting) return;
+    if (state.meltStart === null) state.meltStart = ts;
+    const t = Math.min((ts - state.meltStart) / MELT_DURATION, 1);
+    state.currentS = state.meltFrom - (state.meltFrom - S_MIN) * easeInOut(t);
+    setCube(state.currentS);
+    if (t < 1) state.rafId = requestAnimationFrame(meltFrame);
+  };
+
+  const freezeFrame = (ts: number) => {
+    const state = stateRef.current;
+    if (state.meltStart === null) state.meltStart = ts;
+    const t = Math.min((ts - state.meltStart) / 1500, 1);
+    const S = state.freezeFrom + (S_FULL - state.freezeFrom) * easeInOut(t);
+    setCube(S);
+    state.currentS = S;
+    if (t < 1) state.rafId = requestAnimationFrame(freezeFrame);
+  };
+
+  const startMelting = () => {
+    const state = stateRef.current;
+    clearTimeout(state.freezeTimeout || undefined);
+    clearInterval(state.meltInterval || undefined);
+    if (state.rafId !== null) cancelAnimationFrame(state.rafId);
+    state.melting = true;
+    state.meltStart = null;
+    state.meltFrom = state.currentS;
+    state.dropIndex = 0;
+    state.rafId = requestAnimationFrame(meltFrame);
+    spawnDrip();
+    state.meltInterval = window.setInterval(spawnDrip, 600);
+  };
+
+  const stopMelting = () => {
+    const state = stateRef.current;
+    state.melting = false;
+    clearInterval(state.meltInterval || undefined);
+    if (state.rafId !== null) cancelAnimationFrame(state.rafId);
+    state.freezeFrom = state.currentS;
+    state.meltStart = null;
+    state.rafId = requestAnimationFrame(freezeFrame);
+    state.freezeTimeout = window.setTimeout(() => {
+      if (state.rafId !== null) cancelAnimationFrame(state.rafId);
+      state.currentS = S_FULL;
+      setCube(S_FULL);
+      if (dripLayerRef.current) {
+        while (dripLayerRef.current.firstChild) {
+          dripLayerRef.current.firstChild.remove();
+        }
+      }
+    }, 1600);
+  };
+
+  React.useEffect(() => {
+    const logoEl = svgRef.current?.parentElement;
+    if (!logoEl) return;
+    logoEl.addEventListener('mouseenter', startMelting);
+    logoEl.addEventListener('mouseleave', stopMelting);
+    return () => {
+      logoEl.removeEventListener('mouseenter', startMelting);
+      logoEl.removeEventListener('mouseleave', stopMelting);
+    };
+  }, []);
+
+  return (
+    <svg
+      ref={svgRef}
+      className="w-6 h-6 md:w-8 md:h-8"
+      viewBox="0 0 100 100"
+      xmlns={svgNS}
+      style={{ overflow: 'visible' }}
+    >
+      <defs>
+        <symbol id="drop" viewBox="0 0 170 212.5" preserveAspectRatio="xMidYMin meet">
+          <path d="m135.13,86.75c-6.12-16.91-19.77-43.59-50.14-81.57-.02-.03-.04-.06-.07-.09-.03.03-.04.06-.06.09-31.31,39.16-44.86,66.32-50.69,83.12,0,.01-.01.02-.01.03q-.01.01-.01.02c-.01.01-.01.02-.01.02-2.45,7.09-3.53,12.33-4,15.85,0,.06-.01.12-.02.18-.16,1.77-.25,3.56-.25,5.37,0,23.98,15.32,44.43,36.67,52.04,5.73,2.05,11.89,3.17,18.32,3.19h.13c6.4,0,12.55-1.1,18.27-3.12,21.45-7.56,36.87-28.06,36.87-52.11,0-8.08-1.73-15.89-5-23.02Z" />
+        </symbol>
+      </defs>
+      <g ref={dripLayerRef} id="drip-layer" />
+      <polygon ref={faceLeftRef} id="face-left" fill="rgba(253,246,227,0.7)" />
+      <polygon ref={faceRightRef} id="face-right" fill="rgba(253,246,227,0.4)" />
+      <polygon ref={faceTopRef} id="face-top" fill="rgba(253,246,227,1.0)" />
+    </svg>
+  );
+};
+
 const debugAllowed = import.meta.env.DEV || new URLSearchParams(window.location.search).has('debug');
 
 const App: React.FC = () => {
@@ -183,8 +341,8 @@ const App: React.FC = () => {
         <div className="flex flex-col animate-reveal min-h-[100dvh] desktop-locked-child">
           <header className="relative z-20 w-full px-6 md:px-12 pt-6 md:pt-10 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 md:w-14 md:h-14 border-4 border-current rounded-full flex items-center justify-center">
-                <IceCubeIcon />
+              <div className="relative w-10 h-10 md:w-14 md:h-14 border-4 border-current rounded-full flex items-center justify-center cursor-pointer" style={{ overflow: 'visible' }}>
+                <IceCubeLogo bgColor={currentBg} />
               </div>
               <div className="flex flex-col">
                 <h1 className="font-display text-2xl md:text-4xl leading-none uppercase">{t('app.title')}</h1>
