@@ -97,6 +97,7 @@ const App: React.FC = () => {
     setAppStatus(AppStatus.SUCCESS);
     setShowLoadingOverlay(false);
     setRevealContent(true);
+    setBgColor(canSkate === 'YES' ? '#006B3C' : canSkate === 'NO' ? '#B91C1C' : '#004CCB');
   };
 
   const openModal = () => {
