@@ -81,7 +81,7 @@ export function createSphereBulge(): GridVariation {
   }
 
   function update(time: number) {
-    const amp = MAX_AMP * (0.6 + 0.4 * Math.sin(time * BREATHE_SPEED));
+    const amp = MAX_AMP * Math.sin(time * BREATHE_SPEED);
     applyBulge(hData, amp);
     applyBulge(vData, amp);
     group.rotation.z = time * ROTATE_SPEED;
