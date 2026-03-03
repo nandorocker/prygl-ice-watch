@@ -178,6 +178,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     await put(BLOB_KEY, JSON.stringify({ report, generatedAt: new Date().toISOString() }), {
       access: 'public',
+      allowOverwrite: true,
     });
 
     res.json({ ok: true, generatedAt: new Date().toISOString() });
