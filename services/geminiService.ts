@@ -1,39 +1,52 @@
 import { IceStatusReport } from '../types';
 
-const CACHE_KEY_PREFIX = 'prygl_cache_';
+const CACHE_KEY = 'prygl_cache';
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-function getCached(today: string): IceStatusReport | null {
+interface CacheEntry {
+  report: IceStatusReport;
+  timestamp: number;
+}
+
+function getCached(): IceStatusReport | null {
   try {
-    const raw = localStorage.getItem(CACHE_KEY_PREFIX + today);
-    return raw ? JSON.parse(raw) : null;
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const entry: CacheEntry = JSON.parse(raw);
+    if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return entry.report;
   } catch {
     return null;
   }
 }
 
-function setCache(today: string, report: IceStatusReport): void {
+function setCache(report: IceStatusReport): void {
   try {
-    // Remove stale entries from previous days
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(CACHE_KEY_PREFIX) && k !== CACHE_KEY_PREFIX + today)
-      .forEach(k => localStorage.removeItem(k));
-    localStorage.setItem(CACHE_KEY_PREFIX + today, JSON.stringify(report));
+    const entry: CacheEntry = { report, timestamp: Date.now() };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(entry));
   } catch {
-    // Storage quota exceeded or unavailable — silently ignore
+    // Storage quota exceeded or unavailable
   }
 }
 
-export async function fetchPryglStatus(force = false): Promise<IceStatusReport> {
-  const today = new Date().toISOString().split('T')[0];
-
-  if (!force) {
-    const cached = getCached(today);
-    if (cached) return cached;
+export function clearCache(): void {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {
+    // ignore
   }
+}
 
-  const res = await fetch('/api/status' + (force ? '?force=1' : ''));
+export async function fetchPryglStatus(): Promise<IceStatusReport> {
+  const cached = getCached();
+  if (cached) return cached;
+
+  const res = await fetch('/api/status');
   if (!res.ok) throw new Error(`API error ${res.status}`);
   const report: IceStatusReport = await res.json();
-  setCache(today, report);
+  setCache(report);
   return report;
 }

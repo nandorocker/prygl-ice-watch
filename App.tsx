@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { fetchPryglStatus } from './services/geminiService';
+import { fetchPryglStatus, clearCache } from './services/geminiService';
 import { IceStatusReport, AppStatus } from './types';
 import StatusIndicator from './components/StatusIndicator';
 import LanguageSelector, { Language, useTranslation, getInitialLanguage } from './components/LanguageSelector';
@@ -202,14 +202,14 @@ const App: React.FC = () => {
   const [bgVariation, setBgVariation] = useState<number | undefined>(undefined);
   const [loadingMsgIndex] = useState(() => Math.floor(Math.random() * 5));
 
-  const handleRefresh = async (force = false) => {
+  const handleRefresh = async () => {
     setAppStatus(AppStatus.LOADING);
     setRevealContent(false);
     setShowLoadingOverlay(true);
     setError(null);
 
     try {
-      const data = await fetchPryglStatus(force);
+      const data = await fetchPryglStatus();
       setReport(data);
       setAppStatus(AppStatus.SUCCESS);
 
@@ -341,7 +341,7 @@ const App: React.FC = () => {
               <div className="text-center">
                 <h3 className="text-6xl md:text-8xl font-display mb-4">{t('main.signalLost')}</h3>
                 <p className="font-mono text-sm mb-4 opacity-60 italic">{error}</p>
-                <button onClick={() => handleRefresh(true)} className="btn-regio">{t('main.reboot')}</button>
+                <button onClick={() => { clearCache(); handleRefresh(); }} className="btn-regio">{t('main.reboot')}</button>
               </div>
             )}
 
@@ -470,7 +470,7 @@ const App: React.FC = () => {
           <div className="flex flex-col gap-2">
             <span className="font-mono text-[9px] tracking-widest uppercase opacity-40">{t('debug.refresh')}</span>
             <button
-              onClick={() => handleRefresh(true)}
+              onClick={() => { clearCache(); handleRefresh(); }}
               disabled={appStatus === AppStatus.LOADING}
               style={{ backgroundColor: currentBg }}
               className="flex items-center justify-center gap-2 px-4 py-2 text-[#FDF6E3] font-mono text-[10px] uppercase tracking-widest disabled:opacity-40"
